@@ -1,10 +1,7 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
-    private Rigidbody2D rb;
-    private Animator anim;
-
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
 
@@ -16,13 +13,6 @@ public class Player : MonoBehaviour
     private float dashCooldownTimer;
 
     private float xInput;
-    private int facingDirection = 1;
-    private bool facingRight = true;
-
-    [Header("Collision Info")]
-    [SerializeField] private float groundCheckDistance;
-    [SerializeField] private LayerMask whatIsGround;
-    private bool isGrounded;
 
     [Header("Attack Info")]
     [SerializeField] private float comboTime = .3f;
@@ -30,17 +20,16 @@ public class Player : MonoBehaviour
     private int comboCounter;
     private float comboTimeWindow;
 
-    void Start()
+    protected override void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        anim = GetComponentInChildren<Animator>();
+        base.Start();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
         CheckInput();
         Movement();
-        CollisionChecks();
 
         dashTime -= Time.deltaTime;
         dashCooldownTimer -= Time.deltaTime;
@@ -60,11 +49,6 @@ public class Player : MonoBehaviour
         {
             comboCounter = 0;
         }
-    }
-
-    private void CollisionChecks()
-    {
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
     }
 
     private void CheckInput()
@@ -148,12 +132,7 @@ public class Player : MonoBehaviour
         anim.SetBool("isAttacking", isAttacking);
         anim.SetInteger("comboCounter", comboCounter);
     }
-    private void Flip()
-    {
-        facingDirection = facingDirection * -1;
-        facingRight = !facingRight;
-        transform.Rotate(0, 180, 0);
-    }
+
     private void FlipController()
     {
         if (rb.linearVelocity.x > 0 && !facingRight)
@@ -164,10 +143,5 @@ public class Player : MonoBehaviour
         {
             Flip();
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - groundCheckDistance));
     }
 }
