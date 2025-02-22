@@ -3,6 +3,8 @@ using UnityEngine;
 public class Entity : MonoBehaviour
 {
     [Header("Collision Info")]
+    public Transform attackCheck;
+    public float attackCheckRadius;
     [SerializeField] protected Transform groundCheck;
     [SerializeField] protected float groundCheckDistance;
     [SerializeField] protected Transform wallCheck;
@@ -22,14 +24,19 @@ public class Entity : MonoBehaviour
 
     }
 
-    protected virtual void Start() 
+    protected virtual void Start()
     {
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody2D>();
     }
 
-    protected virtual void Update() 
-    { 
+    public virtual void Damage()
+    {
+        Debug.Log(gameObject.name + " was damaged");
+    }
+
+    protected virtual void Update()
+    {
     }
 
     #region Collision
@@ -40,6 +47,7 @@ public class Entity : MonoBehaviour
     {
         Gizmos.DrawLine(groundCheck.position, new Vector3(groundCheck.position.x, groundCheck.position.y - groundCheckDistance));
         Gizmos.DrawLine(wallCheck.position, new Vector3(wallCheck.position.x + wallCheckDistance, wallCheck.position.y));
+        Gizmos.DrawWireSphere(attackCheck.position, attackCheckRadius);
     }
     #endregion
     #region Flip
@@ -69,6 +77,6 @@ public class Entity : MonoBehaviour
         FlipController(xVelocity);
     }
 
-    public void ZeroVelocity() => rb.linearVelocity = new Vector2(0, 0);
+    public void SetZeroVelocity() => rb.linearVelocity = new Vector2(0, 0);
     #endregion
 }
