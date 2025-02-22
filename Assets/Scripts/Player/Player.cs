@@ -1,13 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
 
     [Header("Attack Details")]
     public Vector2[] attackMovement;
 
-    public bool isBusy {  get; private set; }
+    public bool isBusy { get; private set; }
 
     [Header("Move Info")]
     public float moveSpeed = 8f;
@@ -18,21 +18,8 @@ public class Player : MonoBehaviour
     private float dashUsageTimer;
     public float dashSpeed;
     public float dashDuration;
-    public float dashDir {  get; private set; }
+    public float dashDir { get; private set; }
 
-    [Header("Collision Info")]
-    [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundCheckDistance;
-    [SerializeField] private Transform wallCheck;
-    [SerializeField] private float wallCheckDistance;
-    [SerializeField] private LayerMask whatIsGround;
-
-    public int facingDir { get; private set; } = 1;
-    private bool facingRight = true;
-    #region Components
-    public Animator anim { get; private set; }
-    public Rigidbody2D rb { get; private set; }
-    #endregion
     #region States
     public PlayerStateMachine stateMacine { get; private set; }
     public PlayerIdleState idleState { get; private set; }
@@ -46,77 +33,35 @@ public class Player : MonoBehaviour
     public PlayerPrimaryAttackState primaryAttackState { get; private set; }
     #endregion
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         stateMacine = new PlayerStateMachine();
 
         idleState = new PlayerIdleState(this, stateMacine, "Idle");
         moveState = new PlayerMoveState(this, stateMacine, "Move");
         jumpState = new PlayerJumpState(this, stateMacine, "Jump");
-        airState  = new PlayerAirState(this, stateMacine, "Jump");
+        airState = new PlayerAirState(this, stateMacine, "Jump");
         dashState = new PlayerDashState(this, stateMacine, "Dash");
         wallSlideState = new PlayerWallSlideState(this, stateMacine, "WallSlide");
         wallJumpState = new PlayerWallJumpState(this, stateMacine, "Jump");
-        
+
         primaryAttackState = new PlayerPrimaryAttackState(this, stateMacine, "Attack");
     }
 
-    public void Start()
+    protected override void Start()
     {
-        anim = GetComponentInChildren<Animator>();
-        rb = GetComponent<Rigidbody2D>();
-
+        base.Start();
         stateMacine.Initialize(idleState);
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
         stateMacine.currentState.Update();
 
         CheckForDashInput();
     }
-
-    #region Velocity
-    public void SetVelocity(float xVelocity, float yVelocity)
-    {
-        rb.linearVelocity = new Vector2 (xVelocity, yVelocity);
-        FlipController(xVelocity);
-    }
-
-    public void ZeroVelocity() => rb.linearVelocity = new Vector2(0, 0);
-    #endregion
-
-    #region Collision
-    public bool IsGroundDetected() => Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, whatIsGround);
-    public bool IsWallDetected() => Physics2D.Raycast(wallCheck.position, Vector2.right * facingDir, wallCheckDistance, whatIsGround);
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawLine(groundCheck.position, new Vector3(groundCheck.position.x, groundCheck.position.y - groundCheckDistance));
-        Gizmos.DrawLine(wallCheck.position, new Vector3(wallCheck.position.x + wallCheckDistance, wallCheck.position.y));
-    }
-    #endregion
-
-    #region Flip
-    public void Flip()
-    {
-        facingDir = facingDir * -1;
-        facingRight = !facingRight;
-        transform.Rotate(0, 180, 0);
-    }
-
-    public void FlipController(float _x)
-    {
-        if (_x > 0 && !facingRight)
-        {
-            Flip();
-        }
-        else if (_x < 0 && facingRight)
-        {
-            Flip();
-        }
-    }
-    #endregion
 
     private void CheckForDashInput()
     {
@@ -149,7 +94,7 @@ public class Player : MonoBehaviour
 
         yield return new WaitForSeconds(_seconds);
 
-        isBusy = false; 
+        isBusy = false;
     }
-         
+
 }
